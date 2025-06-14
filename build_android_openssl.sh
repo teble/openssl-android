@@ -6,6 +6,7 @@ ANDROID_API=24
 function build_openssl()
 {
     arch=$1
+    toolchain_prefix=$2
     if [ ! -f $VERSION.tar.gz ]; then
         curl -L -O https://www.openssl.org/source/$VERSION.tar.gz
     fi
@@ -22,18 +23,16 @@ function build_openssl()
 
     if [ "$(uname)" == "Darwin" ]; then
         proc="$(sysctl -n hw.logicalcpu)"
-        export TOOLCHAIN_ROOT="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/darwin-x86_64"
+        export PATH="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/darwin-x86_64/bin:$PATH"
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         proc="$(nproc)"
-        export TOOLCHAIN_ROOT="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64"
+        export PATH="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH"
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
         proc="$(nproc)"
-        export TOOLCHAIN_ROOT="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/windows-x86_64"
+        export PATH="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/windows-x86_64/bin:$PATH"
     fi
-    export PATH="$TOOLCHAIN_ROOT/bin:$PATH"
-	export SYSROOT="$TOOLCHAIN_ROOT/sysroot"
-	export CC="${TOOLCHAIN}21-clang"
-	export CXX="${TOOLCHAIN}21-clang++"
+	export CC="${toolchain_prefix}21-clang"
+	export CXX="${toolchain_prefix}21-clang++"
 	export CXXFLAGS="-fPIC"
 	export CPPFLAGS="-DANDROID -fPIC"
 
@@ -45,15 +44,10 @@ function build_openssl()
     popd
 }
 
-android_archs="arm64 arm x86 x86_64"
-for arch in $android_archs
-do
-    build_openssl $arch
-    if [ $? -ne 0 ]; then
-        echo "build $arch failed"
-        exit 1
-    fi
-done
+build_openssl arm64 aarch64-linux-android
+build_openssl arm armv7a-linux-androideabi
+build_openssl x86 i686-linux-android
+build_openssl x86_64 x86_64-linux-android
 
 mkdir -p openssl/include
 cp -r $VERSION/arm64/include/* openssl/include
