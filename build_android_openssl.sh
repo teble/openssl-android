@@ -5,6 +5,8 @@ ANDROID_API=24
 
 PATH="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH"
 
+ls $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/
+
 function build_openssl()
 {
     arch=$1
