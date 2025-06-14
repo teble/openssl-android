@@ -3,10 +3,6 @@
 VERSION='openssl-3.4.0'
 ANDROID_API=24
 
-PATH="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH"
-
-ls $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/
-
 function build_openssl()
 {
     arch=$1
@@ -26,14 +22,20 @@ function build_openssl()
 
     if [ "$(uname)" == "Darwin" ]; then
         proc="$(sysctl -n hw.logicalcpu)"
-        export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/darwin-x86_64/bin:$PATH
+        export TOOLCHAIN_ROOT="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/darwin-x86_64"
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         proc="$(nproc)"
-        export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
+        export TOOLCHAIN_ROOT="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64"
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
         proc="$(nproc)"
-        export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/windows-x86_64/bin:$PATH
+        export TOOLCHAIN_ROOT="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/windows-x86_64"
     fi
+    export PATH="$TOOLCHAIN_ROOT/bin:$PATH"
+	export SYSROOT="$TOOLCHAIN_ROOT/sysroot"
+	export CC="${TOOLCHAIN}21-clang"
+	export CXX="${TOOLCHAIN}21-clang++"
+	export CXXFLAGS="-fPIC"
+	export CPPFLAGS="-DANDROID -fPIC"
 
     pushd $VERSION
     ./Configure --prefix="`pwd`/$arch" android-$arch -Wno-macro-redefined -D__ANDROID_API__=$ANDROID_API \
