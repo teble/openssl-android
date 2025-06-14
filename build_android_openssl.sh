@@ -1,13 +1,15 @@
 #!/bin/bash
 
-VERSION='openssl-1.1.1w'
+VERSION='openssl-3.4.0'
 ANDROID_API=24
+
+PATH="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH"
 
 function build_openssl()
 {
     arch=$1
     if [ ! -f $VERSION.tar.gz ]; then
-        curl -O https://www.openssl.org/source/$VERSION.tar.gz
+        curl -L -O https://www.openssl.org/source/$VERSION.tar.gz
     fi
     if [ ! -d $VERSION ]; then
         tar -xf $VERSION.tar.gz
@@ -21,13 +23,13 @@ function build_openssl()
     fi
 
     if [ "$(uname)" == "Darwin" ]; then
-        $proc = "$(sysctl -n hw.logicalcpu)"
+        proc="$(sysctl -n hw.logicalcpu)"
         export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/darwin-x86_64/bin:$PATH
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-        $proc = "$(nproc)"
+        proc="$(nproc)"
         export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
     elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-        $proc = "$(nproc)"
+        proc="$(nproc)"
         export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/windows-x86_64/bin:$PATH
     fi
 
