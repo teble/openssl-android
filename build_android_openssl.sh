@@ -2,6 +2,7 @@
 
 VERSION='openssl-3.4.0'
 ANDROID_API=24
+export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
 
 function build_openssl()
 {
@@ -31,10 +32,11 @@ function build_openssl()
         proc="$(nproc)"
         export PATH="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/windows-x86_64/bin:$PATH"
     fi
-	export CC="${toolchain_prefix}21-clang"
-	export CXX="${toolchain_prefix}21-clang++"
+	export CC="$toolchain_prefix$ANDROID_API-clang"
+	export CXX="$toolchain_prefix$ANDROID_API-clang++"
 	export CXXFLAGS="-fPIC"
 	export CPPFLAGS="-DANDROID -fPIC"
+    echo "Building OpenSSL for $arch with $CC"
 
     pushd $VERSION
     ./Configure --prefix="`pwd`/$arch" android-$arch -Wno-macro-redefined -D__ANDROID_API__=$ANDROID_API \
